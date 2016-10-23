@@ -44,6 +44,8 @@ public class ArticleArrayAdapter extends ArrayAdapter<Article> {
             Picasso.with(getContext()).load(thumbnail).into(ivImage);
         }
 
+
+
         return convertView;
     }
 }

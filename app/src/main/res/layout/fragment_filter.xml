@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical" android:layout_width="wrap_content"
+    android:layout_height="wrap_content" android:padding="20dp">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/sort_by"
+        android:id="@+id/tvSortBy"
+        android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentTop="true"
+        android:layout_marginBottom="40dp"/>
+    <Spinner
+        android:layout_height="wrap_content"
+        android:layout_width="wrap_content"
+        android:id="@+id/spSort"
+        android:entries="@array/sort_array"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentTop="true"
+        android:layout_alignBottom="@id/tvSortBy"/>
+    
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/begin_date"
+        android:id="@+id/tvBeginDate"
+        android:textAppearance="@style/Base.TextAppearance.AppCompat.Medium"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_below="@id/tvSortBy"
+        android:layout_marginBottom="40dp"/>
+    <EditText
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/etSelectDate"
+        android:inputType="date"
+        android:hint="@string/select_date"
+        android:cursorVisible="false"
+        android:layout_below="@id/spSort"
+        android:layout_alignLeft="@id/spSort"
+        android:layout_alignStart="@id/spSort"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true"
+        android:layout_alignBaseline="@id/tvBeginDate"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/news_desk"
+        android:id="@+id/tvNewsDesk"
+        android:textAppearance="@style/Base.TextAppearance.AppCompat.Medium"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_below="@id/tvBeginDate"/>
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/llNewsDesk"
+        android:layout_alignLeft="@id/spSort"
+        android:layout_alignStart="@id/spSort"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true"
+        android:layout_alignTop="@id/tvNewsDesk"
+        android:orientation="vertical"
+        android:layout_marginBottom="40dp">
+        <CheckBox
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/arts"
+            android:id="@+id/cbArts"/>
+        <CheckBox
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/style"
+            android:id="@+id/cbStyle"/>
+        <CheckBox
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/sports"
+            android:id="@+id/cbSports"/>
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/llButtons"
+        android:layout_below="@id/llNewsDesk">
+
+        <Button
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="@string/reset"
+            android:id="@+id/btnReset"
+            android:layout_weight="1"
+            style="@style/Base.Widget.AppCompat.Button.Borderless"/>
+        <Button
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="@string/cancel"
+            android:id="@+id/btnCancel"
+            android:layout_weight="1"
+            style="@style/Base.Widget.AppCompat.Button.Borderless"/>
+        <Button
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="@string/save"
+            android:id="@+id/btnSave"
+            android:layout_weight="1"
+            style="@style/Base.Widget.AppCompat.Button.Borderless"/>
+    </LinearLayout>
+
+</RelativeLayout>

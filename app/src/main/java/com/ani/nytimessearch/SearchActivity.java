@@ -1,19 +1,23 @@
 package com.ani.nytimessearch;
 
-import android.support.v7.app.AppCompatActivity;
+import android.net.Uri;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
+import android.support.customtabs.CustomTabsIntent;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.view.MenuItemCompat;
+import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.SearchView;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
-import android.widget.Button;
-import android.widget.EditText;
-import android.widget.GridLayout;
+import android.widget.AdapterView;
 import android.widget.GridView;
 import android.widget.Toast;
 
-import com.loopj.android.http.AsyncHttpClient;
-import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.loopj.android.http.JsonHttpResponseHandler;
-import com.loopj.android.http.RequestParams;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -24,50 +28,117 @@ import java.util.List;
 
 import cz.msebera.android.httpclient.Header;
 
-import static android.webkit.ConsoleMessage.MessageLevel.LOG;
+public class SearchActivity extends AppCompatActivity implements FilterFragment.Listener {
 
-public class SearchActivity extends AppCompatActivity {
-
-    private static final String SEARCH_URL =
-            "https://api.nytimes.com/svc/search/v2/articlesearch.json";
-
-    private EditText etQuery;
-    private Button btnSearch;
+    private final NYTClient nytClient = new NYTClient();
+    private Filter filter;
     private GridView gvResults;
 
     private ArticleArrayAdapter articleArrayAdapter;
 
     private List<Article> articles = new ArrayList<>();
+    private int page = 0;
+    @Nullable
+    private String query = null;
+    private int lastQuerySize = 10;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_search);
 
-        setupViews();
+        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+        gvResults = (GridView) findViewById(R.id.gvResults);
 
         articleArrayAdapter = new ArticleArrayAdapter(this, articles);
         gvResults.setAdapter(articleArrayAdapter);
+        gvResults.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                Article article = articleArrayAdapter.getItem(position);
+                // open up webview
+                // Use a CustomTabsIntent.Builder to configure CustomTabsIntent.
+                CustomTabsIntent.Builder builder = new CustomTabsIntent.Builder();
+                // set toolbar color and/or setting custom actions before invoking build()
+                // Once ready, call CustomTabsIntent.Builder.build() to create a CustomTabsIntent
+                CustomTabsIntent customTabsIntent = builder.build();
+                // and launch the desired Url with CustomTabsIntent.launchUrl()
+                customTabsIntent.launchUrl(SearchActivity.this, Uri.parse(article.getWebUrl()));
+            }
+        });
+        gvResults.setOnScrollListener(new EndlessScrollListener() {
+            @Override
+            public boolean onLoadMore(int page, int totalItemsCount) {
+                // Triggered only when new data needs to be appended to the list
+                // Add whatever code is needed to append new items to your AdapterView
+
+                if (query != null && !query.isEmpty()) {
+                    if (lastQuerySize > 0) {
+                        page = page + 1;
+                        onArticleSearch(query, page);
+                        return true;
+                    }
+                }
+
+                return false; // ONLY if more data is actually being loaded; false otherwise.
+            }
+        });
+
+        filter = new Filter();
     }
 
-    private void setupViews() {
-        etQuery = (EditText) findViewById(R.id.etQuery);
-        btnSearch = (Button) findViewById(R.id.btnSearch);
-        gvResults = (GridView) findViewById(R.id.gvResults);
+    // Menu icons are inflated just as they were with actionbar
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        getMenuInflater().inflate(R.menu.menu_search, menu);
+
+        MenuItem searchItem = menu.findItem(R.id.action_search);
+        final SearchView searchView = (SearchView) MenuItemCompat.getActionView(searchItem);
+
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                // perform search query
+                page = 0;
+                lastQuerySize = 10;
+                SearchActivity.this.query = query;
+                onArticleSearch(query, page);
+
+                // workaround to avoid issues with some emulators and keyboard devices firing twice if a keyboard enter is used
+                // see https://code.google.com/p/android/issues/detail?id=24599
+                searchView.clearFocus();
+
+                return true;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                return false;
+            }
+        });
+
+        MenuItem filterItem = menu.findItem(R.id.action_filter);
+        filterItem.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
+            @Override
+            public boolean onMenuItemClick(MenuItem item) {
+                showFilterDialog();
+                return true;
+            }
+        });
+
+        return true;
     }
 
-    public void onArticleSearch(View view) {
-        String query = etQuery.getText().toString();
-//        Toast.makeText(this, query, Toast.LENGTH_LONG).show();
+    private void showFilterDialog() {
+        FragmentManager fm = getSupportFragmentManager();
+        FilterFragment filterFragment = FilterFragment.newInstance(filter);
+        filterFragment.show(fm, "fragment_filter");
+    }
 
-        AsyncHttpClient client = new AsyncHttpClient();
-
-        RequestParams params = new RequestParams();
-        params.put("api-key", "8c025c37c53d4142b27e4484efa7e7dd");
-        params.put("q", query);
-        params.put("page", 0);
-
-        client.get(SEARCH_URL, params, new JsonHttpResponseHandler() {
+    private void onArticleSearch(String query, final int page) {
+        nytClient.articleSearch(query, page, filter, new JsonHttpResponseHandler() {
             @Override
             public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
                 Log.d("DEBUG", response.toString());
@@ -75,19 +146,28 @@ public class SearchActivity extends AppCompatActivity {
 
                 try {
                     docs = response.getJSONObject("response").getJSONArray("docs");
-                    articleArrayAdapter.clear();
-                    articleArrayAdapter.addAll(Article.fromJSONArray(docs));
-                    Log.d("DEBUG", articles.toString());
+                    if (page == 0) {
+                        articleArrayAdapter.clear();
+                    }
+                    List<Article> articles = Article.fromJSONArray(docs);
+                    articleArrayAdapter.addAll(articles);
+                    lastQuerySize = articles.size();
                 } catch (JSONException e) {
                     Log.e(SearchActivity.class.getCanonicalName(), "error while reading json", e);
                 }
-
             }
 
             @Override
-            public void onFailure(int statusCode, Header[] headers, Throwable throwable, JSONObject errorResponse) {
+            public void onFailure(int statusCode, Header[] headers, Throwable throwable,
+                    JSONObject errorResponse) {
+                Toast.makeText(SearchActivity.this, "Recieved error", Toast.LENGTH_LONG).show();
                 super.onFailure(statusCode, headers, throwable, errorResponse); // FIXME
             }
         });
+    }
+
+    @Override
+    public void onFinishFilterDialog(Filter filter) {
+        this.filter = filter;
     }
 }

@@ -2,4 +2,20 @@
     <string name="app_name">NYTimesSearch</string>
     <string name="hint">Enter search query</string>
     <string name="search">Search</string>
+    <string name="filter">Filter</string>
+
+    <string name="sort_by">Sort by</string>
+
+    <string name="time_period">Time period</string>
+    <string name="begin_date">Begin date</string>
+    <string name="select_date">Select a date</string>
+
+    <string name="news_desk">News desk</string>
+    <string name="arts">Arts</string>
+    <string name="style">Fashion &amp; Style</string>
+    <string name="sports">Sports</string>
+
+    <string name="save">Save</string>
+    <string name="cancel">Cancel</string>
+    <string name="reset">Reset</string>
 </resources>
