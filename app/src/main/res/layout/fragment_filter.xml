@@ -12,7 +12,10 @@
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
         android:layout_alignParentTop="true"
-        android:layout_marginBottom="40dp"/>
+        android:layout_marginBottom="40dp"
+        android:drawableLeft="@drawable/ic_sort_black_24dp"
+        android:drawableStart="@drawable/ic_sort_black_24dp"
+        android:drawablePadding="10dp"/>
     <Spinner
         android:layout_height="wrap_content"
         android:layout_width="wrap_content"
@@ -21,7 +24,7 @@
         android:layout_alignParentRight="true"
         android:layout_alignParentEnd="true"
         android:layout_alignParentTop="true"
-        android:layout_alignBottom="@id/tvSortBy"/>
+        android:layout_alignBaseline="@id/tvSortBy"/>
     
     <TextView
         android:layout_width="wrap_content"
@@ -32,13 +35,15 @@
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
         android:layout_below="@id/tvSortBy"
-        android:layout_marginBottom="40dp"/>
+        android:layout_marginBottom="40dp"
+        android:drawableLeft="@drawable/ic_event_black_24dp"
+        android:drawableStart="@drawable/ic_event_black_24dp"
+        android:drawablePadding="10dp"/>
     <EditText
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/etSelectDate"
         android:inputType="date"
-        android:hint="@string/select_date"
         android:cursorVisible="false"
         android:layout_below="@id/spSort"
         android:layout_alignLeft="@id/spSort"
@@ -55,7 +60,10 @@
         android:textAppearance="@style/Base.TextAppearance.AppCompat.Medium"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
-        android:layout_below="@id/tvBeginDate"/>
+        android:layout_below="@id/tvBeginDate"
+        android:drawableLeft="@drawable/ic_filter_list_black_24dp"
+        android:drawableStart="@drawable/ic_filter_list_black_24dp"
+        android:drawablePadding="10dp"/>
     <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -96,21 +104,21 @@
             android:text="@string/reset"
             android:id="@+id/btnReset"
             android:layout_weight="1"
-            style="@style/Base.Widget.AppCompat.Button.Borderless"/>
+            style="@style/Base.Widget.AppCompat.Button.Borderless.Colored"/>
         <Button
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:text="@string/cancel"
             android:id="@+id/btnCancel"
             android:layout_weight="1"
-            style="@style/Base.Widget.AppCompat.Button.Borderless"/>
+            style="@style/Base.Widget.AppCompat.Button.Borderless.Colored"/>
         <Button
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:text="@string/save"
             android:id="@+id/btnSave"
             android:layout_weight="1"
-            style="@style/Base.Widget.AppCompat.Button.Borderless"/>
+            style="@style/Base.Widget.AppCompat.Button.Borderless.Colored"/>
     </LinearLayout>
 
 </RelativeLayout>
