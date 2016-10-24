@@ -1,4 +1,4 @@
-package com.ani.nytimessearch;
+package com.ani.nytimessearch.nytclient;
 
 import android.support.annotation.Nullable;
 
@@ -14,8 +14,7 @@ import java.util.Set;
 
 public class Filter implements Serializable {
     private Sort sort;
-    @Nullable
-    private Calendar beginDate;
+    @Nullable private Calendar beginDate;
     private Set<String> newsDesks;
 
     public Filter() {
@@ -47,7 +46,7 @@ public class Filter implements Serializable {
         this.newsDesks = newsDesks;
     }
 
-    enum Sort {
+    public enum Sort {
         OLDEST("oldest"),
         NEWEST("newest"),
         RELEVANCE("relevance");

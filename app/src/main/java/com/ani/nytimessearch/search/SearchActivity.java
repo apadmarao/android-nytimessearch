@@ -1,10 +1,11 @@
-package com.ani.nytimessearch;
+package com.ani.nytimessearch.search;
 
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.customtabs.CustomTabsIntent;
 import android.support.v4.app.FragmentManager;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.view.MenuItemCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.SearchView;
@@ -17,6 +18,11 @@ import android.widget.AdapterView;
 import android.widget.GridView;
 import android.widget.Toast;
 
+import com.ani.nytimessearch.R;
+import com.ani.nytimessearch.filter.FilterFragment;
+import com.ani.nytimessearch.nytclient.Article;
+import com.ani.nytimessearch.nytclient.Filter;
+import com.ani.nytimessearch.nytclient.NYTClient;
 import com.loopj.android.http.JsonHttpResponseHandler;
 
 import org.json.JSONArray;
@@ -62,6 +68,7 @@ public class SearchActivity extends AppCompatActivity implements FilterFragment.
                 // Use a CustomTabsIntent.Builder to configure CustomTabsIntent.
                 CustomTabsIntent.Builder builder = new CustomTabsIntent.Builder();
                 // set toolbar color and/or setting custom actions before invoking build()
+                builder.setToolbarColor(ContextCompat.getColor(SearchActivity.this, R.color.colorAccent));
                 // Once ready, call CustomTabsIntent.Builder.build() to create a CustomTabsIntent
                 CustomTabsIntent customTabsIntent = builder.build();
                 // and launch the desired Url with CustomTabsIntent.launchUrl()

@@ -1,4 +1,4 @@
-package com.ani.nytimessearch;
+package com.ani.nytimessearch.filter;
 
 import android.app.DatePickerDialog;
 import android.os.Bundle;
@@ -14,6 +14,9 @@ import android.widget.CheckBox;
 import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.Spinner;
+
+import com.ani.nytimessearch.nytclient.Filter;
+import com.ani.nytimessearch.R;
 
 import java.text.DateFormat;
 import java.util.Calendar;
@@ -47,7 +50,6 @@ public class FilterFragment extends DialogFragment implements DatePickerDialog.O
         filterFragment.setArguments(bundle);
         return filterFragment;
     }
-
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -224,7 +226,7 @@ public class FilterFragment extends DialogFragment implements DatePickerDialog.O
         }
     }
 
-    interface Listener {
+    public interface Listener {
         void onFinishFilterDialog(Filter filter);
     }
 }

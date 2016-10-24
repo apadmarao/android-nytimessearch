@@ -1,4 +1,4 @@
-package com.ani.nytimessearch;
+package com.ani.nytimessearch.nytclient;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -12,7 +12,7 @@ public class Article {
     private String headline;
     private String thumbnail;
 
-    public Article(JSONObject jsonObject) {
+    private Article(JSONObject jsonObject) {
         try {
             webUrl = jsonObject.getString("web_url");
             headline = jsonObject.getJSONObject("headline").getString("main");

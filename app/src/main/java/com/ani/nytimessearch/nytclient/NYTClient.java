@@ -1,4 +1,4 @@
-package com.ani.nytimessearch;
+package com.ani.nytimessearch.nytclient;
 
 import android.util.Log;
 
@@ -21,6 +21,8 @@ public class NYTClient {
     private static final String SORT = "sort";
     private static final String FILTER_QUERY = "fq";
     private static final String BEGIN_DATE = "begin_date";
+
+    private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyyMMdd");
 
     private final AsyncHttpClient client = new AsyncHttpClient();
 
@@ -47,7 +49,7 @@ public class NYTClient {
         client.get(SEARCH_URL, params, responseHandler);
     }
 
-    private String newsDeskValue(Set<String> newsDesks) {
+    private static String newsDeskValue(Set<String> newsDesks) {
         StringBuilder sb = new StringBuilder();
         for (String newsDesk : newsDesks) {
             sb.append("\"");
@@ -57,8 +59,7 @@ public class NYTClient {
         return String.format("news_desk:(%s)", sb.toString());
     }
 
-    private String dateValue(Calendar cal) {
-        SimpleDateFormat format = new SimpleDateFormat("yyyyMMdd");
-        return format.format(cal.getTime());
+    private static String dateValue(Calendar cal) {
+        return DATE_FORMAT.format(cal.getTime());
     }
 }

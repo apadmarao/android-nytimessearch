@@ -1,4 +1,4 @@
-package com.ani.nytimessearch;
+package com.ani.nytimessearch.filter;
 
 import android.app.DatePickerDialog;
 import android.app.Dialog;

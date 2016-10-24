@@ -1,4 +1,4 @@
-package com.ani.nytimessearch;
+package com.ani.nytimessearch.search;
 
 import android.content.Context;
 import android.support.annotation.NonNull;
@@ -10,16 +10,18 @@ import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.ani.nytimessearch.nytclient.Article;
+import com.ani.nytimessearch.R;
 import com.squareup.picasso.Picasso;
 
 import java.util.List;
 
-public class ArticleArrayAdapter extends ArrayAdapter<Article> {
+class ArticleArrayAdapter extends ArrayAdapter<Article> {
 
     private ImageView ivImage;
     private TextView tvTitle;
 
-    public ArticleArrayAdapter(Context context, List<Article> articles) {
+    ArticleArrayAdapter(Context context, List<Article> articles) {
         super(context, android.R.layout.simple_list_item_1, articles);
     }
 
