@@ -16,14 +16,13 @@
         android:background="?attr/colorPrimary">
     </android.support.v7.widget.Toolbar>
 
-    <GridView
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/rvArticles"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_alignParentBottom="true"
         android:layout_alignParentRight="true"
         android:layout_alignParentEnd="true"
-        android:layout_below="@+id/toolbar"
-        android:id="@+id/gvResults"
-        android:numColumns="2" />
+        android:layout_below="@+id/toolbar" />
 
 </RelativeLayout>

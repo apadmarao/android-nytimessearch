@@ -8,14 +8,14 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.view.MenuItemCompat;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SearchView;
+import android.support.v7.widget.StaggeredGridLayoutManager;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.AdapterView;
-import android.widget.GridView;
 import android.widget.Toast;
 
 import com.ani.nytimessearch.R;
@@ -38,14 +38,13 @@ public class SearchActivity extends AppCompatActivity implements FilterFragment.
 
     private final NYTClient nytClient = new NYTClient();
     private Filter filter;
-    private GridView gvResults;
-
-    private ArticleArrayAdapter articleArrayAdapter;
+    private RecyclerView rvArticles;
+    private ArticlesAdapter articlesAdapter;
+    private EndlessRecyclerViewScrollListener scrollListener;
 
     private List<Article> articles = new ArrayList<>();
 
     private int page = 0;
-    private int lastQuerySize = 10;
     @Nullable
     private String query = null;
 
@@ -56,39 +55,42 @@ public class SearchActivity extends AppCompatActivity implements FilterFragment.
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-        gvResults = (GridView) findViewById(R.id.gvResults);
+        rvArticles = (RecyclerView) findViewById(R.id.rvArticles);
 
-        articleArrayAdapter = new ArticleArrayAdapter(this, articles);
-        gvResults.setAdapter(articleArrayAdapter);
-        gvResults.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                Article article = articleArrayAdapter.getItem(position);
-                // open up webview
-                // Use a CustomTabsIntent.Builder to configure CustomTabsIntent.
-                CustomTabsIntent.Builder builder = new CustomTabsIntent.Builder();
-                // set toolbar color and/or setting custom actions before invoking build()
-                builder.setToolbarColor(ContextCompat.getColor(SearchActivity.this, R.color.colorAccent));
-                // Once ready, call CustomTabsIntent.Builder.build() to create a CustomTabsIntent
-                CustomTabsIntent customTabsIntent = builder.build();
-                // and launch the desired Url with CustomTabsIntent.launchUrl()
-                customTabsIntent.launchUrl(SearchActivity.this, Uri.parse(article.getWebUrl()));
-            }
-        });
-        gvResults.setOnScrollListener(new EndlessScrollListener() {
-            @Override
-            public boolean onLoadMore(int page, int totalItemsCount) {
-                // Triggered only when new data needs to be appended to the list
-                // Add whatever code is needed to append new items to your AdapterView
-                if (lastQuerySize > 0) {
-                    page = page + 1;
-                    onArticleSearch(query, page);
-                    return true;
+        articlesAdapter = new ArticlesAdapter(this, articles);
+        rvArticles.setAdapter(articlesAdapter);
+        StaggeredGridLayoutManager layoutManager =
+                new StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL);
+        layoutManager.setGapStrategy(StaggeredGridLayoutManager.GAP_HANDLING_NONE);
+        rvArticles.setLayoutManager(layoutManager);
+
+        ItemClickSupport.addTo(rvArticles).setOnItemClickListener(
+                new ItemClickSupport.OnItemClickListener() {
+                    @Override
+                    public void onItemClicked(RecyclerView recyclerView, int position, View v) {
+                        // do it
+                        Article article = articles.get(position);
+                        // open up webview
+                        // Use a CustomTabsIntent.Builder to configure CustomTabsIntent.
+                        CustomTabsIntent.Builder builder = new CustomTabsIntent.Builder();
+                        // set toolbar color and/or setting custom actions before invoking build()
+                        builder.setToolbarColor(ContextCompat.getColor(SearchActivity.this, R.color.colorAccent));
+                        // Once ready, call CustomTabsIntent.Builder.build() to create a CustomTabsIntent
+                        CustomTabsIntent customTabsIntent = builder.build();
+                        // and launch the desired Url with CustomTabsIntent.launchUrl()
+                        customTabsIntent.launchUrl(SearchActivity.this, Uri.parse(article.getWebUrl()));
+
+                    }
                 }
-
-                return false; // ONLY if more data is actually being loaded; false otherwise.
+        );
+        scrollListener = new EndlessRecyclerViewScrollListener(layoutManager) {
+            @Override
+            public void onLoadMore(int page, int totalItemsCount, RecyclerView recyclerView) {
+                SearchActivity.this.page = SearchActivity.this.page + 1;
+                onArticleSearch(query, SearchActivity.this.page);
             }
-        });
+        };
+        rvArticles.addOnScrollListener(scrollListener);
 
         filter = new Filter();
     }
@@ -105,9 +107,7 @@ public class SearchActivity extends AppCompatActivity implements FilterFragment.
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {
-                // perform search query
-                page = 0;
-                lastQuerySize = 10;
+                SearchActivity.this.page = 0;
                 SearchActivity.this.query = query;
                 onArticleSearch(query, page);
 
@@ -144,7 +144,7 @@ public class SearchActivity extends AppCompatActivity implements FilterFragment.
 
     private void onArticleSearch(String query, final int page) {
         if (query == null || query.isEmpty()) {
-            Toast.makeText(this, "Please enter a non-empty search query", Toast.LENGTH_LONG).show();
+            showErrorToast("Enter a non-empty search query");
             return;
         }
 
@@ -152,25 +152,36 @@ public class SearchActivity extends AppCompatActivity implements FilterFragment.
             @Override
             public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
                 Log.d("DEBUG", response.toString());
-                JSONArray docs;
 
+                JSONArray docs;
                 try {
                     docs = response.getJSONObject("response").getJSONArray("docs");
                     if (page == 0) {
-                        articleArrayAdapter.clear();
+                        articles.clear();
+                        scrollListener.resetState();
+                        articlesAdapter.notifyDataSetChanged();
                     }
-                    List<Article> articles = Article.fromJSONArray(docs);
-                    articleArrayAdapter.addAll(articles);
-                    lastQuerySize = articles.size();
+                    articles.addAll(Article.fromJSONArray(docs));
+                    articlesAdapter.notifyDataSetChanged();
                 } catch (JSONException e) {
                     Log.e(SearchActivity.class.getCanonicalName(), "error while reading json", e);
+                    showErrorToast(null);
                 }
             }
 
             @Override
             public void onFailure(int statusCode, Header[] headers, Throwable throwable,
                     JSONObject errorResponse) {
-                Toast.makeText(SearchActivity.this, "Recieved error", Toast.LENGTH_LONG).show();
+                Log.d("DEBUG", errorResponse.toString());
+
+                String message = null;
+                try {
+                    message = errorResponse.getString("message");
+                } catch (JSONException e) {
+                    Log.e(SearchActivity.class.getCanonicalName(), "error while reading json", e);
+                }
+
+                showErrorToast(message);
             }
         });
     }
@@ -179,7 +190,11 @@ public class SearchActivity extends AppCompatActivity implements FilterFragment.
     public void onFinishFilterDialog(Filter filter) {
         this.filter = filter;
         this.page = 0;
-        this.lastQuerySize = 10;
         onArticleSearch(query, page);
+    }
+
+    private void showErrorToast(@Nullable String message) {
+        String defaultMessage = "Error loading results from network";
+        Toast.makeText(this, message == null ? defaultMessage : message, Toast.LENGTH_LONG).show();
     }
 }

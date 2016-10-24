@@ -6,8 +6,11 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 public class Article {
+    private static final Random random = new Random();
+
     private String webUrl;
     private String headline;
     private String thumbnail;
@@ -19,7 +22,8 @@ public class Article {
 
             JSONArray multimedias = jsonObject.getJSONArray("multimedia");
             if (multimedias.length() > 0) {
-                JSONObject multimedia = multimedias.getJSONObject(0);
+                JSONObject multimedia = multimedias.getJSONObject(
+                        random.nextInt(multimedias.length()));
                 thumbnail = "http://www.nytimes.com/" + multimedia.getString("url");
             } else {
                 this.thumbnail = "";
