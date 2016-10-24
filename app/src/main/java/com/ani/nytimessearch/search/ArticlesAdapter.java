@@ -15,7 +15,12 @@ import com.squareup.picasso.Picasso;
 
 import java.util.List;
 
+import static com.ani.nytimessearch.R.id.ivImage;
+
 public class ArticlesAdapter extends RecyclerView.Adapter<ArticlesAdapter.ViewHolder> {
+
+    private static final int TEXT = 0;
+    private static final int TEXT_PLUS_IMAGE = 1;
 
     private Context context;
     private List<Article> articles;
@@ -30,15 +35,33 @@ public class ArticlesAdapter extends RecyclerView.Adapter<ArticlesAdapter.ViewHo
     }
 
     @Override
+    public int getItemViewType(int position) {
+        //More to come
+        Article article = articles.get(position);
+        return article.getThumbnail().isEmpty() ? TEXT : TEXT_PLUS_IMAGE;
+    }
+
+    @Override
     public ArticlesAdapter.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         Context context = parent.getContext();
         LayoutInflater inflater = LayoutInflater.from(context);
 
-        // Inflate the custom layout
-        View contactView = inflater.inflate(R.layout.item_article_result, parent, false);
+        ViewHolder viewHolder = null;
+        switch (viewType) {
+            case TEXT: {
+                View articleView = inflater.inflate(R.layout.item_article_text_result, parent, false);
+                viewHolder = new ViewHolder(articleView);
+                break;
+            }
+            case TEXT_PLUS_IMAGE: {
+                View articleView = inflater.inflate(R.layout.item_article_result, parent, false);
+                viewHolder = new ViewHolder(articleView);
+                break;
+            }
+            default:
+                throw new IllegalStateException("Unexpected view type: " + viewType);
+        }
 
-        // Return a new holder instance
-        ViewHolder viewHolder = new ViewHolder(contactView);
         return viewHolder;
     }
 
@@ -48,14 +71,24 @@ public class ArticlesAdapter extends RecyclerView.Adapter<ArticlesAdapter.ViewHo
         // Get the data model based on position
         Article article = articles.get(position);
 
-        // Set item views based on your views and data model
-        viewHolder.ivImage.setImageResource(0);
-        String thumbnail = article.getThumbnail();
-        if (!TextUtils.isEmpty(thumbnail)) {
-            Picasso.with(getContext()).load(thumbnail).into(viewHolder.ivImage);
-        }
 
-        viewHolder.tvTitle.setText(article.getHeadline());
+        switch (viewHolder.getItemViewType()) {
+            case TEXT: {
+                viewHolder.tvTitle.setText(article.getHeadline());
+                break;
+            }
+            case TEXT_PLUS_IMAGE: {
+                // Set item views based on your views and data model
+                viewHolder.ivImage.setImageResource(0);
+                String thumbnail = article.getThumbnail();
+                if (!TextUtils.isEmpty(thumbnail)) {
+                    Picasso.with(getContext()).load(thumbnail).into(viewHolder.ivImage);
+                }
+
+                viewHolder.tvTitle.setText(article.getHeadline());
+                break;
+            }
+        }
     }
 
     // Returns the total count of items in the list
@@ -64,14 +97,24 @@ public class ArticlesAdapter extends RecyclerView.Adapter<ArticlesAdapter.ViewHo
         return articles.size();
     }
 
-    public static class ViewHolder extends RecyclerView.ViewHolder {
-        public ImageView ivImage;
-        public TextView tvTitle;
+    static class ViewHolder extends RecyclerView.ViewHolder {
+        ImageView ivImage;
+        TextView tvTitle;
 
-        public ViewHolder(View itemView) {
+        ViewHolder(View itemView) {
             super(itemView);
 
             ivImage = (ImageView) itemView.findViewById(R.id.ivImage);
+            tvTitle = (TextView) itemView.findViewById(R.id.tvTitle);
+        }
+    }
+
+    static class TextViewHolder extends RecyclerView.ViewHolder {
+        TextView tvTitle;
+
+        public TextViewHolder(View itemView) {
+            super(itemView);
+
             tvTitle = (TextView) itemView.findViewById(R.id.tvTitle);
         }
     }
