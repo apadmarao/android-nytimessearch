@@ -1,5 +1,8 @@
 package com.ani.nytimessearch.search;
 
+import android.content.Context;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -29,6 +32,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -148,6 +152,11 @@ public class SearchActivity extends AppCompatActivity implements FilterFragment.
             return;
         }
 
+        if (!isNetworkAvailable() || !isOnline()) {
+            showErrorToast("Check network availability");
+            return;
+        }
+
         nytClient.articleSearch(query, page, filter, new JsonHttpResponseHandler() {
             @Override
             public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
@@ -196,5 +205,24 @@ public class SearchActivity extends AppCompatActivity implements FilterFragment.
     private void showErrorToast(@Nullable String message) {
         String defaultMessage = "Error loading results from network";
         Toast.makeText(this, message == null ? defaultMessage : message, Toast.LENGTH_LONG).show();
+    }
+
+
+    private Boolean isNetworkAvailable() {
+        ConnectivityManager connectivityManager
+                = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
+        return activeNetworkInfo != null && activeNetworkInfo.isConnectedOrConnecting();
+    }
+
+    public boolean isOnline() {
+        Runtime runtime = Runtime.getRuntime();
+        try {
+            Process ipProcess = runtime.exec("/system/bin/ping -c 1 8.8.8.8");
+            int     exitValue = ipProcess.waitFor();
+            return (exitValue == 0);
+        } catch (IOException e)          { e.printStackTrace(); }
+        catch (InterruptedException e) { e.printStackTrace(); }
+        return false;
     }
 }
