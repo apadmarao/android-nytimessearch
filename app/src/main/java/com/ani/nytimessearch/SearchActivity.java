@@ -37,10 +37,11 @@ public class SearchActivity extends AppCompatActivity implements FilterFragment.
     private ArticleArrayAdapter articleArrayAdapter;
 
     private List<Article> articles = new ArrayList<>();
+
     private int page = 0;
+    private int lastQuerySize = 10;
     @Nullable
     private String query = null;
-    private int lastQuerySize = 10;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -72,13 +73,10 @@ public class SearchActivity extends AppCompatActivity implements FilterFragment.
             public boolean onLoadMore(int page, int totalItemsCount) {
                 // Triggered only when new data needs to be appended to the list
                 // Add whatever code is needed to append new items to your AdapterView
-
-                if (query != null && !query.isEmpty()) {
-                    if (lastQuerySize > 0) {
-                        page = page + 1;
-                        onArticleSearch(query, page);
-                        return true;
-                    }
+                if (lastQuerySize > 0) {
+                    page = page + 1;
+                    onArticleSearch(query, page);
+                    return true;
                 }
 
                 return false; // ONLY if more data is actually being loaded; false otherwise.
@@ -138,6 +136,11 @@ public class SearchActivity extends AppCompatActivity implements FilterFragment.
     }
 
     private void onArticleSearch(String query, final int page) {
+        if (query == null || query.isEmpty()) {
+            Toast.makeText(this, "Please enter a non-empty search query", Toast.LENGTH_LONG).show();
+            return;
+        }
+
         nytClient.articleSearch(query, page, filter, new JsonHttpResponseHandler() {
             @Override
             public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
@@ -161,7 +164,6 @@ public class SearchActivity extends AppCompatActivity implements FilterFragment.
             public void onFailure(int statusCode, Header[] headers, Throwable throwable,
                     JSONObject errorResponse) {
                 Toast.makeText(SearchActivity.this, "Recieved error", Toast.LENGTH_LONG).show();
-                super.onFailure(statusCode, headers, throwable, errorResponse); // FIXME
             }
         });
     }
@@ -169,5 +171,8 @@ public class SearchActivity extends AppCompatActivity implements FilterFragment.
     @Override
     public void onFinishFilterDialog(Filter filter) {
         this.filter = filter;
+        this.page = 0;
+        this.lastQuerySize = 10;
+        onArticleSearch(query, page);
     }
 }

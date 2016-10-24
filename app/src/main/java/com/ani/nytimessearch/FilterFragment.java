@@ -1,18 +1,15 @@
 package com.ani.nytimessearch;
 
 import android.app.DatePickerDialog;
-import android.graphics.Point;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.FragmentManager;
-import android.view.Display;
-import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.Window;
 import android.widget.AdapterView;
+import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.DatePicker;
 import android.widget.EditText;
@@ -27,10 +24,16 @@ public class FilterFragment extends DialogFragment implements DatePickerDialog.O
 
     private Spinner spSort;
     private EditText etSelectDate;
+
     private CheckBox cbArts;
     private CheckBox cbStyle;
     private CheckBox cbSports;
 
+    private Button btnReset;
+    private Button btnCancel;
+    private Button btnSave;
+
+    private Filter lastFilter;
     private Filter filter;
 
     public FilterFragment() {
@@ -57,8 +60,63 @@ public class FilterFragment extends DialogFragment implements DatePickerDialog.O
         super.onViewCreated(view, savedInstanceState);
 
         filter = (Filter) getArguments().getSerializable(FILTER_EXTRA);
+        lastFilter = filter.copy(); // deep copy object, because it may be mutated by user actions
 
         spSort = (Spinner) view.findViewById(R.id.spSort);
+        spSort.setOnItemSelectedListener(new SpSortItemSelectedListener());
+
+        etSelectDate = (EditText) view.findViewById(R.id.etSelectDate);
+        etSelectDate.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                showDatePickerDialog();
+            }
+        });
+
+        cbArts = (CheckBox) view.findViewById(R.id.cbArts);
+        cbStyle = (CheckBox) view.findViewById(R.id.cbStyle);
+        cbSports = (CheckBox) view.findViewById(R.id.cbSports);
+        CbNewsDeskOnClickListener cbNewsDeskOnClickListener = new CbNewsDeskOnClickListener();
+        cbArts.setOnClickListener(cbNewsDeskOnClickListener);
+        cbStyle.setOnClickListener(cbNewsDeskOnClickListener);
+        cbSports.setOnClickListener(cbNewsDeskOnClickListener);
+
+        btnReset = (Button) view.findViewById(R.id.btnReset);
+        btnCancel = (Button) view.findViewById(R.id.btnCancel);
+        btnSave = (Button) view.findViewById(R.id.btnSave);
+
+        btnReset.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                filter = new Filter();
+                // reinitialize view with updated filter
+                initializeViews();
+            }
+        });
+        btnCancel.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                filter = lastFilter;
+
+                Listener listener = (Listener) getActivity();
+                listener.onFinishFilterDialog(filter);
+                dismiss();
+            }
+        });
+        btnSave.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Listener listener = (Listener) getActivity();
+                listener.onFinishFilterDialog(filter);
+                dismiss();
+            }
+        });
+
+        initializeViews();
+    }
+
+    private void initializeViews() {
+        // Initialize sort spinner
         switch (filter.getSort()) {
             case OLDEST:
                 spSort.setSelection(0);
@@ -71,36 +129,18 @@ public class FilterFragment extends DialogFragment implements DatePickerDialog.O
                 spSort.setSelection(2);
                 break;
         }
-        spSort.setOnItemSelectedListener(new SpSortItemSelectedListener());
 
-        etSelectDate = (EditText) view.findViewById(R.id.etSelectDate);
-        etSelectDate.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                showDatePickerDialog();
-            }
-        });
-        if (filter.getBeginDate() != null) {
+        // Initialize date edit text
+        if (filter.getBeginDate() == null) {
+            etSelectDate.setText("");
+        } else {
             etSelectDate.setText(formatDate(filter.getBeginDate()));
         }
 
-        cbArts = (CheckBox) view.findViewById(R.id.cbArts);
-        cbStyle = (CheckBox) view.findViewById(R.id.cbStyle);
-        cbSports = (CheckBox) view.findViewById(R.id.cbSports);
-        CbNewsDeskOnClickListener cbNewsDeskOnClickListener = new CbNewsDeskOnClickListener();
-        cbArts.setOnClickListener(cbNewsDeskOnClickListener);
-        cbStyle.setOnClickListener(cbNewsDeskOnClickListener);
-        cbSports.setOnClickListener(cbNewsDeskOnClickListener);
-
-        if (filter.getNewsDesks().contains("Arts")) {
-            cbArts.setChecked(true);
-        }
-        if (filter.getNewsDesks().contains("Fashion & Style")) {
-            cbStyle.setChecked(true);
-        }
-        if (filter.getNewsDesks().contains("Sports")) {
-            cbSports.setChecked(true);
-        }
+        // Initialize news desk checkboxes
+        cbArts.setChecked(filter.getNewsDesks().contains("Arts"));
+        cbStyle.setChecked(filter.getNewsDesks().contains("Fashion & Style"));
+        cbSports.setChecked(filter.getNewsDesks().contains("Sports"));
     }
 
     @Override
@@ -127,10 +167,6 @@ public class FilterFragment extends DialogFragment implements DatePickerDialog.O
         // SETS the target fragment for use later when sending results
         datePicker.setTargetFragment(this, 300);
         datePicker.show(fm, "fragment_date_picker");
-    }
-
-    interface Listener {
-        void onFinishFilterDialog(Filter filter);
     }
 
     private class SpSortItemSelectedListener implements AdapterView.OnItemSelectedListener {
@@ -186,5 +222,9 @@ public class FilterFragment extends DialogFragment implements DatePickerDialog.O
                     break;
             }
         }
+    }
+
+    interface Listener {
+        void onFinishFilterDialog(Filter filter);
     }
 }

@@ -12,7 +12,7 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Important news"
+        android:text="@string/important_news"
         android:maxLines="2"
         android:ellipsize="end"
         android:id="@+id/tvTitle" />
